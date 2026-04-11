@@ -8,16 +8,13 @@ export default function PageHeader({
   description,
 }: PageHeaderProps) {
   return (
-    <div className="space-y-3">
-      <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">
-        Toronet Transaction Intelligence
-      </div>
-
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+     <div className="space-y-5">
+     
+        <div className="space-y-3">
+        <h1 className="text-3xl font-bold tracking-tight text- sm:text-5xl">
           {title}
         </h1>
-        <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+          <p className="font-bold text-[32px] leading-[110%] text-center mb-6 font-['Orbitron'] bg-linear-to-r from-[#041A1F] from-45% to-[#20475A] bg-clip-text text-transparent">
           {description}
         </p>
       </div>
