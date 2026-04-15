@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 
 type WalletSearchFormProps = {
   onSubmit: (walletAddress: string) => void;
@@ -48,6 +48,14 @@ export default function WalletSearchForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4 sm:grid-cols-[auto_1fr] sm:items-center">
+        <Sparkles className="size-5 text-indigo-500" />
+        <p className="text-sm text-indigo-800">
+          Tip: paste the full address for the most accurate transaction and
+          failure analysis.
+        </p>
+      </div>
+
       <div className="space-y-2">
         <label
           htmlFor="walletAddress"
@@ -66,7 +74,7 @@ export default function WalletSearchForm({
               value={walletAddress}
               onChange={(event) => setWalletAddress(event.target.value)}
               onBlur={() => setTouched(true)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               autoComplete="off"
               spellCheck={false}
             />
@@ -75,7 +83,7 @@ export default function WalletSearchForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+           className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Search size={16} />
             {isLoading ? 'Inspecting...' : 'Inspect Wallet'}
@@ -83,7 +91,7 @@ export default function WalletSearchForm({
         </div>
 
         {validationError ? (
-          <p className="text-sm text-red-600">{validationError}</p>
+        <p className="text-sm text-rose-600">{validationError}</p>
         ) : (
           <p className="text-sm text-slate-500">
             Enter a wallet address to view balances, transaction activity, and

@@ -26,8 +26,8 @@ export default function BalanceCards({
 
   return (
     <SectionCard
-      title="Balances"
-      description="Token balances will appear here after wallet lookup is connected."
+       title="Portfolio Snapshot"
+     description="Token balances for the selected wallet."
       className="lg:col-span-2"
     >
       {isLoading ? (
@@ -49,12 +49,12 @@ export default function BalanceCards({
           {displayBalances.map((balance) => (
             <div
               key={balance.symbol}
-              className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4"
+              className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4"
             >
-              <p className="text-sm font-medium text-slate-700">
+               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 {balance.symbol}
               </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
+              <p className="mt-3 text-2xl font-semibold text-slate-900">
                 {balance.value}
               </p>
             </div>

@@ -40,7 +40,7 @@ export default function TransactionList({
   return (
     <SectionCard
       title="Recent Transactions"
-      description="Your transaction list, status badges, and detail actions will live here."
+     description="Track transaction outcomes and inspect individual records."
     >
       {isLoading ? (
         <div className="space-y-3">
@@ -57,8 +57,8 @@ export default function TransactionList({
           description="Transaction activity will appear here once wallet lookup is connected."
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200">
-          <div className="hidden grid-cols-5 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 md:grid">
+  <div className="overflow-hidden rounded-2xl border border-slate-200">
+          <div className="hidden grid-cols-5 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 md:grid">
             <span>Hash</span>
             <span>Type</span>
             <span>Status</span>
@@ -66,11 +66,11 @@ export default function TransactionList({
             <span>Action</span>
           </div>
 
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-slate-200 bg-white">
             {rows.map((transaction) => (
               <div
                 key={transaction.hash}
-                className="grid gap-3 px-4 py-4 md:grid-cols-5 md:items-center"
+                 className="grid gap-3 px-4 py-4 transition hover:bg-slate-50 md:grid-cols-5 md:items-center"
               >
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-400 md:hidden">
@@ -105,7 +105,7 @@ export default function TransactionList({
                 <div>
                   <Link
                     href={`/tx/${transaction.hash}`}
-                    className="inline-flex text-sm font-medium text-slate-900 underline-offset-4 hover:underline"
+                       className="inline-flex rounded-md px-1 text-sm font-semibold text-indigo-700 underline-offset-4 hover:underline"
                   >
                     View details
                   </Link>

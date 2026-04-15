@@ -15,7 +15,7 @@ export default function WalletSummaryCard({
   return (
     <SectionCard
       title="Wallet Summary"
-      description="This will show the selected wallet address, status, and other metadata."
+        description="Overview of the selected wallet and sync status."
       className="lg:col-span-1"
     >
       {isLoading ? (
@@ -25,8 +25,8 @@ export default function WalletSummaryCard({
         </div>
       ) : walletAddress ? (
         <div className="space-y-3">
-          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-            <p className="text-sm font-medium text-slate-700">
+          <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
               Selected Wallet
             </p>
             <p className="mt-2 break-all text-sm text-slate-500">
@@ -35,10 +35,10 @@ export default function WalletSummaryCard({
           </div>
 
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Wallet Status
             </p>
-            <p className="mt-2 text-sm text-slate-500">{walletStatus}</p>
+           <p className="mt-2 text-sm text-slate-700">{walletStatus}</p>
           </div>
         </div>
       ) : (
