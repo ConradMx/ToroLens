@@ -4,18 +4,22 @@ import EmptyState from '@/components/ui/EmptyState';
 type WalletSummaryCardProps = {
   walletAddress?: string;
   walletStatus?: string;
+  walletLabel?: string;
+  isKycVerified?: boolean;
   isLoading?: boolean;
 };
 
 export default function WalletSummaryCard({
   walletAddress,
   walletStatus = 'Awaiting SDK integration',
+  walletLabel,
+  isKycVerified = false,
   isLoading = false,
 }: WalletSummaryCardProps) {
   return (
     <SectionCard
       title="Wallet Summary"
-        description="Overview of the selected wallet and sync status."
+      description="Selected wallet overview and account metadata."
       className="lg:col-span-1"
     >
       {isLoading ? (
@@ -25,20 +29,30 @@ export default function WalletSummaryCard({
         </div>
       ) : walletAddress ? (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
-              Selected Wallet
-            </p>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p className="text-sm font-medium text-slate-700">Selected Wallet</p>
             <p className="mt-2 break-all text-sm text-slate-500">
               {walletAddress}
             </p>
           </div>
 
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Wallet Status
+            <p className="text-sm font-medium text-slate-700">Wallet Status</p>
+            <p className="mt-2 text-sm text-slate-500">{walletStatus}</p>
+          </div>
+
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p className="text-sm font-medium text-slate-700">Label</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {walletLabel || 'No label available'}
             </p>
-           <p className="mt-2 text-sm text-slate-700">{walletStatus}</p>
+          </div>
+
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p className="text-sm font-medium text-slate-700">KYC</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {isKycVerified ? 'Verified' : 'Not verified / unavailable'}
+            </p>
           </div>
         </div>
       ) : (

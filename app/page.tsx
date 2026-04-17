@@ -1,5 +1,5 @@
 'use client';
-
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import SectionCard from '@/components/ui/SectionCard';
@@ -10,8 +10,10 @@ import BalanceCards from '@/components/wallet/BalanceCards';
 import TransactionList from '@/components/wallet/TransactionList';
 import { useWalletLookup } from '@/hooks/useWalletLookup';
 import { useWalletTransactions } from '@/hooks/useWalletTransactions';
+import TransactionSearchForm from '@/components/wallet/TransactionSearchForm';
 
 export default function HomePage() {
+    const router = useRouter();
   const [submittedWallet, setSubmittedWallet] = useState<string>('');
 
   const {
@@ -46,6 +48,10 @@ export default function HomePage() {
     setSubmittedWallet(walletAddress);
   }
 
+  function handleTransactionSubmit(hash: string) {
+    router.push(`/tx/${hash}`);
+  }
+
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -63,6 +69,13 @@ export default function HomePage() {
             isLoading={walletLookupLoading || transactionsLoading}
           />
         </SectionCard>
+
+ <SectionCard
+            title="Transaction Inspector"
+            description="Jump directly to a transaction details page using a transaction hash."
+          >
+            <TransactionSearchForm onSubmit={handleTransactionSubmit} />
+          </SectionCard>
 
         {submittedWallet && !isValidAddress ? (
           <ErrorState message="Enter a valid 0x-prefixed 40-byte wallet address." />
@@ -101,11 +114,13 @@ export default function HomePage() {
         </section>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <WalletSummaryCard
-            walletAddress={summary?.address ?? submittedWallet}
-            walletStatus={walletStatus}
-            isLoading={walletLookupLoading}
-          />
+         <WalletSummaryCard
+  walletAddress={summary?.address ?? submittedWallet}
+  walletStatus={walletStatus}
+  walletLabel={summary?.label}
+  isKycVerified={summary?.isKycVerified}
+  isLoading={walletLookupLoading}
+/>
 
           <BalanceCards
             balances={balances}

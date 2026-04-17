@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getWalletOverview } from '@/libs/toronet/queries';
+import { fetchWalletOverview } from '@/libs/toronet/client';
 
 function isValidWalletAddress(value: string) {
   return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
@@ -13,7 +13,7 @@ export function useWalletLookup(walletAddress: string) {
   const query = useQuery({
     queryKey: ['wallet', 'overview', walletAddress],
     enabled: isValid,
-    queryFn: () => getWalletOverview(walletAddress),
+    queryFn: () => fetchWalletOverview(walletAddress),
   });
 
   return {

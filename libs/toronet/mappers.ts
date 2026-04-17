@@ -85,10 +85,10 @@ export function mapWalletSummary(
   return {
     address,
     status: toStringValue(
-      record.status ?? record.accountStatus,
+      record.status ?? record.accountStatus ?? record.role,
       'Connected to Toronet',
     ),
-    label: toStringValue(record.label ?? record.username, ''),
+    label: toStringValue(record.label ?? record.username ?? record.name, ''),
     isKycVerified:
       record.isKycVerified === true || record.kycVerified === true,
   };
@@ -100,15 +100,25 @@ export function mapBalances(payload: unknown): BalanceItem[] {
   return [
     {
       symbol: 'TNGN',
-      value: toStringValue(record.ngnBalance ?? record.tngnBalance ?? '--'),
+      value: toStringValue(
+        record.ngnBalance ?? record.tngnBalance ?? record.bal_naira ?? '--',
+      ),
     },
     {
       symbol: 'TUSD',
-      value: toStringValue(record.usdBalance ?? record.tusdBalance ?? '--'),
+      value: toStringValue(
+        record.usdBalance ?? record.tusdBalance ?? record.bal_dollar ?? '--',
+      ),
     },
     {
-      symbol: 'ToroG',
-      value: toStringValue(record.toroGBalance ?? record.torogBalance ?? '--'),
+      symbol: 'TORO',
+      value: toStringValue(
+        record.toroGBalance ??
+          record.torogBalance ??
+          record.bal_toro ??
+          record.bal_auth ??
+          '--',
+      ),
     },
   ];
 }
@@ -121,11 +131,21 @@ export function mapTransactionList(payload: unknown): TransactionItem[] {
 
     return {
       hash: toStringValue(
-        record.hash ?? record.txhash ?? record.txHash ?? `unknown-${index}`,
+        record.hash ??
+          record.txhash ??
+          record.txHash ??
+          record.EV_Hash ??
+          `unknown-${index}`,
       ),
-      type: toType(record.type ?? record.action ?? record.method),
-      status: toStatus(record.status ?? record.state ?? record.result),
-      date: formatDate(record.date ?? record.timestamp ?? record.time),
+      type: toType(
+        record.type ?? record.action ?? record.method ?? record.EV_Event,
+      ),
+      status: toStatus(
+        record.status ?? record.state ?? record.result ?? 'success',
+      ),
+      date: formatDate(
+        record.date ?? record.timestamp ?? record.time ?? record.EV_Time,
+      ),
     };
   });
 }
@@ -139,15 +159,21 @@ export function mapTransactionDetails(input: {
   const txRecord = (input.tx ?? {}) as Record<string, unknown>;
   const receiptRecord = (input.receipt ?? {}) as Record<string, unknown>;
 
-  const from = toStringValue(txRecord.from ?? txRecord.sender, '--');
-  const to = toStringValue(txRecord.to ?? txRecord.receiver, '--');
+  const from = toStringValue(
+    txRecord.from ?? txRecord.sender ?? txRecord.TX_From,
+    '--',
+  );
+  const to = toStringValue(txRecord.to ?? txRecord.receiver ?? txRecord.TX_To, '--');
 
   const status = toStatus(
-    receiptRecord.status ?? txRecord.status ?? txRecord.state,
+    receiptRecord.status ?? txRecord.status ?? txRecord.state ?? txRecord.TX_Status,
   );
 
   const rawError = toStringValue(
-    receiptRecord.message ?? txRecord.rawError ?? txRecord.error,
+    receiptRecord.message ??
+      txRecord.rawError ??
+      txRecord.error ??
+      txRecord.TX_Error,
     '',
   );
 
@@ -155,18 +181,34 @@ export function mapTransactionDetails(input: {
 
   return {
     hash: input.hash,
-    type: toType(txRecord.type ?? txRecord.action ?? txRecord.method),
+    type: toType(
+      txRecord.type ?? txRecord.action ?? txRecord.method ?? txRecord.TX_Type,
+    ),
     status,
     date: formatDate(
-      txRecord.date ?? txRecord.timestamp ?? receiptRecord.timestamp,
+      txRecord.date ??
+        txRecord.timestamp ??
+        receiptRecord.timestamp ??
+        txRecord.TX_Time,
     ),
     from,
     to,
-    amount: toStringValue(txRecord.amount ?? txRecord.value, '--'),
-    asset: toStringValue(txRecord.asset ?? txRecord.currency ?? 'TORO'),
-    fee: toStringValue(txRecord.fee ?? receiptRecord.gasUsed, '--'),
+    amount: toStringValue(
+      txRecord.amount ?? txRecord.value ?? txRecord.TX_Value,
+      '--',
+    ),
+    asset: toStringValue(
+      txRecord.asset ?? txRecord.currency ?? txRecord.TX_Asset ?? 'TORO',
+    ),
+    fee: toStringValue(
+      txRecord.fee ?? receiptRecord.gasUsed ?? txRecord.TX_Fee,
+      '--',
+    ),
     blockNumber: toStringValue(
-      txRecord.blockNumber ?? txRecord.block ?? receiptRecord.blockNumber,
+      txRecord.blockNumber ??
+        txRecord.block ??
+        receiptRecord.blockNumber ??
+        txRecord.TX_BlockNumber,
       '--',
     ),
     network: toStringValue(txRecord.network, 'Toronet'),
