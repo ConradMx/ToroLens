@@ -6,6 +6,8 @@ type WalletSummaryCardProps = {
   walletStatus?: string;
   walletLabel?: string;
   isKycVerified?: boolean;
+  isEnrolled?: boolean;
+  role?: string;
   isLoading?: boolean;
 };
 
@@ -14,6 +16,8 @@ export default function WalletSummaryCard({
   walletStatus = 'Awaiting SDK integration',
   walletLabel,
   isKycVerified = false,
+  isEnrolled,
+  role,
   isLoading = false,
 }: WalletSummaryCardProps) {
   return (
@@ -45,6 +49,24 @@ export default function WalletSummaryCard({
             <p className="text-sm font-medium text-slate-700">Label</p>
             <p className="mt-2 text-sm text-slate-500">
               {walletLabel || 'No label available'}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p className="text-sm font-medium text-slate-700">Role</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {role || 'Unavailable'}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p className="text-sm font-medium text-slate-700">Enrollment</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {isEnrolled === undefined
+                ? 'Unavailable'
+                : isEnrolled
+                  ? 'Enrolled'
+                  : 'Not enrolled'}
             </p>
           </div>
 

@@ -19,6 +19,8 @@ export function useWalletLookup(walletAddress: string) {
   return {
     summary: query.data?.summary ?? null,
     balances: query.data?.balances ?? [],
+    permissions: query.data?.permissions ?? [],
+    insights: query.data?.insights ?? [],
     isLoading: query.isLoading,
     error: query.error instanceof Error ? query.error.message : null,
     isValidAddress: isValid,

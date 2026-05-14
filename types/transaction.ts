@@ -26,4 +26,20 @@ export type TransactionDetails = TransactionItem & {
   rawError?: string;
   revertReason?: string;
   humanExplanation?: string;
+  timeline: Array<{
+    label: string;
+    value: string;
+  }>;
+  relatedEntities: Array<{
+    label: string;
+    value: string;
+  }>;
+};
+
+export type NetworkSnapshot = {
+  status: string;
+  latestBlock: string;
+  latestBlockTime: string;
+  recentTransactionCount: number;
+  recentTransactions: TransactionItem[];
 };

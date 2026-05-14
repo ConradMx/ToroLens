@@ -6,9 +6,9 @@ async function readJson<T>(response: Response): Promise<T> {
   let message = 'Request failed.';
 
   try {
-    const payload = (await response.json()) as { error?: string };
+    const payload = (await response.json()) as { error?: string; code?: string };
     if (payload.error) {
-      message = payload.error;
+      message = payload.code ? `${payload.error} (${payload.code})` : payload.error;
     }
   } catch {
     // Ignore invalid error payloads and fall back to the generic message.
@@ -38,4 +38,11 @@ export async function fetchTransactionDetails(hash: string) {
   const response = await fetch(`/api/transaction/${encodeURIComponent(hash)}`);
 
   return readJson<Awaited<ReturnType<typeof import('@/libs/toronet/queries').getTransactionDetails>>>(response);
+}
+
+export async function fetchNetworkSummary(count = 10) {
+  const params = new URLSearchParams({ count: String(count) });
+  const response = await fetch(`/api/network/summary?${params.toString()}`);
+
+  return readJson<Awaited<ReturnType<typeof import('@/libs/toronet/queries').getNetworkSnapshot>>>(response);
 }

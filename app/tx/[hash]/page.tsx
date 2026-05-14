@@ -158,6 +158,50 @@ export default function TransactionDetailsPage() {
                 </div>
               </div>
             </SectionCard>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <SectionCard
+                title="Transaction Timeline"
+                description="Normalized lifecycle checkpoints derived from transaction and receipt data."
+              >
+                <div className="space-y-3">
+                  {transaction.timeline.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <p className="text-sm font-medium text-slate-700">
+                        {item.label}
+                      </p>
+                      <p className="text-right text-sm text-slate-600">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                title="Linked Entities"
+                description="Wallets and assets connected to this transaction."
+              >
+                <div className="space-y-3">
+                  {transaction.relatedEntities.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <p className="text-sm font-medium text-slate-700">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 break-all text-sm text-slate-600">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+            </div>
           </>
         ) : null}
       </div>

@@ -1,33 +1,20 @@
 import { getTransactionDetails } from '@/libs/toronet/queries';
+import { apiErrorResponse } from '@/libs/server/api';
+import { enforceRateLimit } from '@/libs/server/rate-limit';
+import { transactionHashSchema } from '@/libs/server/validation';
 
 export const runtime = 'nodejs';
 
-function isValidTransactionHash(value: string) {
-  return /^0x[a-fA-F0-9]{64}$/.test(value.trim());
-}
-
 export async function GET(
-  _request: Request,
+  request: Request,
   context: RouteContext<'/api/transaction/[hash]'>,
 ) {
-  const { hash } = await context.params;
-
-  if (!isValidTransactionHash(hash)) {
-    return Response.json(
-      { error: 'A valid transaction hash is required.' },
-      { status: 400 },
-    );
-  }
-
   try {
-    const data = await getTransactionDetails(hash);
+    enforceRateLimit(request, 'transaction-details');
+    const { hash } = await context.params;
+    const data = await getTransactionDetails(transactionHashSchema.parse(hash));
     return Response.json(data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Unable to fetch transaction details.';
-
-    return Response.json({ error: message }, { status: 502 });
+    return apiErrorResponse(error);
   }
 }

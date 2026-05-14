@@ -11,14 +11,20 @@ import TransactionList from '@/components/wallet/TransactionList';
 import { useWalletLookup } from '@/hooks/useWalletLookup';
 import { useWalletTransactions } from '@/hooks/useWalletTransactions';
 import TransactionSearchForm from '@/components/wallet/TransactionSearchForm';
+import NetworkAnalyticsPanel from '@/components/wallet/NetworkAnalyticsPanel';
+import ReferencePanel from '@/components/wallet/ReferencePanel';
+import WalletIntelligencePanels from '@/components/wallet/WalletIntelligencePanels';
+import { useNetworkSummary } from '@/hooks/useNetworkSummary';
 
 export default function HomePage() {
-    const router = useRouter();
+  const router = useRouter();
   const [submittedWallet, setSubmittedWallet] = useState<string>('');
 
   const {
     summary,
     balances,
+    permissions,
+    insights,
     isLoading: walletLookupLoading,
     error: walletLookupError,
     isValidAddress,
@@ -29,6 +35,11 @@ export default function HomePage() {
     isLoading: transactionsLoading,
     error: transactionsError,
   } = useWalletTransactions(submittedWallet, 20);
+  const {
+    snapshot,
+    isLoading: networkLoading,
+    error: networkError,
+  } = useNetworkSummary(10);
 
   const walletStatus = useMemo(() => {
     if (!submittedWallet) return 'Awaiting wallet address';
@@ -57,7 +68,7 @@ export default function HomePage() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <PageHeader
           title="ToroLens"
-          description="Inspect wallets with a cleaner workflow: search once, review balances instantly, and monitor the latest Toronet activity in one place."
+          description="A Toronet reference platform for wallet intelligence, transaction inspection, identity resolution, ecosystem analytics, and developer onboarding."
         />
 
         <SectionCard
@@ -70,12 +81,14 @@ export default function HomePage() {
           />
         </SectionCard>
 
- <SectionCard
+        <SectionCard
             title="Transaction Inspector"
             description="Jump directly to a transaction details page using a transaction hash."
           >
             <TransactionSearchForm onSubmit={handleTransactionSubmit} />
           </SectionCard>
+
+        <ReferencePanel />
 
         {submittedWallet && !isValidAddress ? (
           <ErrorState message="Enter a valid 0x-prefixed 40-byte wallet address." />
@@ -99,7 +112,7 @@ export default function HomePage() {
               Explorer Mode
             </p>
             <p className="mt-2 text-lg font-semibold text-slate-900">
-              Wallet Intelligence
+              Reference Platform
             </p>
           </div>
 
@@ -114,19 +127,35 @@ export default function HomePage() {
         </section>
 
         <div className="grid gap-6 lg:grid-cols-3">
-         <WalletSummaryCard
-  walletAddress={summary?.address ?? submittedWallet}
-  walletStatus={walletStatus}
-  walletLabel={summary?.label}
-  isKycVerified={summary?.isKycVerified}
-  isLoading={walletLookupLoading}
-/>
+          <WalletSummaryCard
+            walletAddress={summary?.address ?? submittedWallet}
+            walletStatus={walletStatus}
+            walletLabel={summary?.label}
+            role={summary?.role}
+            isEnrolled={summary?.isEnrolled}
+            isKycVerified={summary?.isKycVerified}
+            isLoading={walletLookupLoading}
+          />
 
           <BalanceCards
             balances={balances}
             isLoading={walletLookupLoading}
           />
         </div>
+
+        {submittedWallet && isValidAddress ? (
+          <WalletIntelligencePanels
+            permissions={permissions}
+            insights={insights}
+            isLoading={walletLookupLoading}
+          />
+        ) : null}
+
+        <NetworkAnalyticsPanel
+          snapshot={snapshot}
+          isLoading={networkLoading}
+          error={networkError}
+        />
 
         <TransactionList
           transactions={transactions}

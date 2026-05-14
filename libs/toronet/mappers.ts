@@ -1,11 +1,17 @@
 import { explainTransactionFailure } from '@/libs/toronet/errors';
 import type {
+  NetworkSnapshot,
   TransactionDetails,
   TransactionItem,
   TransactionStatus,
   TransactionType,
 } from '@/types/transaction';
-import type { BalanceItem, WalletSummary } from '@/types/wallet';
+import type {
+  BalanceItem,
+  WalletInsight,
+  WalletPermission,
+  WalletSummary,
+} from '@/types/wallet';
 
 function toStringValue(value: unknown, fallback = ''): string {
   if (value == null) return fallback;
@@ -13,6 +19,18 @@ function toStringValue(value: unknown, fallback = ''): string {
   if (typeof value === 'number') return String(value);
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
+}
+
+function toBoolean(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') return value;
+  const normalized = toStringValue(value).toLowerCase();
+  if (['true', 'yes', '1', 'verified', 'enrolled'].includes(normalized)) {
+    return true;
+  }
+  if (['false', 'no', '0', 'unverified', 'not enrolled'].includes(normalized)) {
+    return false;
+  }
+  return undefined;
 }
 
 function formatDate(value: unknown): string {
@@ -81,16 +99,18 @@ export function mapWalletSummary(
   payload: unknown,
 ): WalletSummary {
   const record = (payload ?? {}) as Record<string, unknown>;
+  const role = toStringValue(record.role ?? record.accountRole, '');
 
   return {
     address,
     status: toStringValue(
-      record.status ?? record.accountStatus ?? record.role,
+      record.status ?? record.accountStatus ?? role,
       'Connected to Toronet',
     ),
     label: toStringValue(record.label ?? record.username ?? record.name, ''),
-    isKycVerified:
-      record.isKycVerified === true || record.kycVerified === true,
+    role,
+    isEnrolled: toBoolean(record.enrolled ?? record.isEnrolled),
+    isKycVerified: toBoolean(record.isKycVerified ?? record.kycVerified),
   };
 }
 
@@ -163,12 +183,16 @@ export function mapTransactionDetails(input: {
     txRecord.from ?? txRecord.sender ?? txRecord.TX_From,
     '--',
   );
-  const to = toStringValue(txRecord.to ?? txRecord.receiver ?? txRecord.TX_To, '--');
-
-  const status = toStatus(
-    receiptRecord.status ?? txRecord.status ?? txRecord.state ?? txRecord.TX_Status,
+  const to = toStringValue(
+    txRecord.to ?? txRecord.receiver ?? txRecord.TX_To,
+    '--',
   );
-
+  const status = toStatus(
+    receiptRecord.status ??
+      txRecord.status ??
+      txRecord.state ??
+      txRecord.TX_Status,
+  );
   const rawError = toStringValue(
     receiptRecord.message ??
       txRecord.rawError ??
@@ -176,8 +200,17 @@ export function mapTransactionDetails(input: {
       txRecord.TX_Error,
     '',
   );
-
   const revertReason = input.revertReason || '';
+  const blockNumber = toStringValue(
+    txRecord.blockNumber ??
+      txRecord.block ??
+      receiptRecord.blockNumber ??
+      txRecord.TX_BlockNumber,
+    '--',
+  );
+  const asset = toStringValue(
+    txRecord.asset ?? txRecord.currency ?? txRecord.TX_Asset ?? 'TORO',
+  );
 
   return {
     hash: input.hash,
@@ -197,20 +230,12 @@ export function mapTransactionDetails(input: {
       txRecord.amount ?? txRecord.value ?? txRecord.TX_Value,
       '--',
     ),
-    asset: toStringValue(
-      txRecord.asset ?? txRecord.currency ?? txRecord.TX_Asset ?? 'TORO',
-    ),
+    asset,
     fee: toStringValue(
       txRecord.fee ?? receiptRecord.gasUsed ?? txRecord.TX_Fee,
       '--',
     ),
-    blockNumber: toStringValue(
-      txRecord.blockNumber ??
-        txRecord.block ??
-        receiptRecord.blockNumber ??
-        txRecord.TX_BlockNumber,
-      '--',
-    ),
+    blockNumber,
     network: toStringValue(txRecord.network, 'Toronet'),
     rawError,
     revertReason,
@@ -221,5 +246,98 @@ export function mapTransactionDetails(input: {
       rawError,
       revertReason,
     }),
+    timeline: [
+      {
+        label: 'Submitted',
+        value: formatDate(txRecord.date ?? txRecord.timestamp ?? txRecord.TX_Time),
+      },
+      { label: 'Block', value: blockNumber },
+      { label: 'Status', value: status },
+    ],
+    relatedEntities: [
+      { label: 'Sender', value: from },
+      { label: 'Recipient', value: to },
+      { label: 'Asset', value: asset },
+    ],
+  };
+}
+
+export function mapWalletPermissions(summary: WalletSummary): WalletPermission[] {
+  return [
+    {
+      label: 'Role',
+      value: summary.role || 'Unavailable',
+      description:
+        'Role data comes from Toronet account metadata and helps builders gate administrative or privileged flows.',
+    },
+    {
+      label: 'Enrollment',
+      value:
+        summary.isEnrolled === undefined
+          ? 'Unavailable'
+          : summary.isEnrolled
+            ? 'Enrolled'
+            : 'Not enrolled',
+      description:
+        'Enrollment determines whether the wallet is recognized for Toronet-native account behavior.',
+    },
+    {
+      label: 'Identity',
+      value: summary.label ? 'TNS associated' : 'No TNS name returned',
+      description:
+        'TNS information is resolved through the SDK and normalized before it reaches the UI.',
+    },
+  ];
+}
+
+export function mapWalletInsights(
+  balances: BalanceItem[],
+  transactions: TransactionItem[],
+): WalletInsight[] {
+  const activeBalances = balances.filter((balance) => balance.value !== '--');
+  const failures = transactions.filter((tx) => tx.status === 'failed').length;
+
+  return [
+    {
+      label: 'Assets visible',
+      value: String(activeBalances.length),
+      description:
+        'Number of normalized Toronet asset balances returned for this wallet.',
+    },
+    {
+      label: 'Recent activity',
+      value: String(transactions.length),
+      description:
+        'Transactions loaded through the gateway for the current inspection window.',
+    },
+    {
+      label: 'Recent failures',
+      value: String(failures),
+      description:
+        'Failed transactions are surfaced so users can inspect probable causes.',
+    },
+  ];
+}
+
+export function mapNetworkSnapshot(payload: unknown): NetworkSnapshot {
+  const record = (payload ?? {}) as Record<string, unknown>;
+  const latestBlock = (record.latestBlock ?? {}) as Record<string, unknown>;
+  const transactionPayload = record.transactions as
+    | Record<string, unknown>
+    | unknown[]
+    | undefined;
+  const transactions = Array.isArray(transactionPayload)
+    ? mapTransactionList(transactionPayload)
+    : mapTransactionList(transactionPayload?.data);
+
+  return {
+    status: toStringValue(record.status, 'Available'),
+    latestBlock: toStringValue(
+      latestBlock.number ?? latestBlock.blockNumber ?? latestBlock.id,
+      '--',
+    ),
+    latestBlockTime: formatDate(latestBlock.timestamp ?? latestBlock.time),
+    recentTransactionCount: transactions.length,
+    recentTransactions: transactions,
   };
 }
