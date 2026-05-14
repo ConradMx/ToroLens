@@ -53,9 +53,9 @@ npm run build
 
 ## SDK Caveats
 
-ToroLens is SDK-first. Direct Toronet API access should be introduced only when the SDK lacks a capability, and only inside the gateway with a comment explaining the SDK limitation and replacement path.
+ToroLens is SDK-first. Direct Toronet API access should be introduced only when the SDK lacks or misroutes a capability, and only inside the gateway with a comment explaining the SDK limitation and replacement path.
 
-Current gateway coverage uses SDK methods for wallet balances, wallet transactions, roles, TNS names, enrollment, KYC status, transaction details, receipts, revert reasons, latest block data, blockchain status, and recent network transactions.
+Current gateway coverage uses SDK methods for wallet balances, wallet transactions, roles, TNS names, enrollment, KYC status, transaction details, receipts, revert reasons, latest block data, blockchain status, and recent network transactions. Transaction detail and receipt reads include a gateway-contained query fallback for the SDK v0.2.0 `id`/`hash` parameter mismatch on the configured testnet API.
 
 ## Extension Guide
 

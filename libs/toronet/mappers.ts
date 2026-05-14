@@ -94,6 +94,23 @@ function toType(value: unknown): TransactionType {
   return 'Unknown';
 }
 
+function toErrorText(value: unknown): string {
+  const text = toStringValue(value, '');
+  const normalized = text.toLowerCase();
+
+  if (
+    normalized.includes('error') ||
+    normalized.includes('fail') ||
+    normalized.includes('revert') ||
+    normalized.includes('missing') ||
+    normalized.includes('invalid')
+  ) {
+    return text;
+  }
+
+  return '';
+}
+
 export function mapWalletSummary(
   address: string,
   payload: unknown,
@@ -193,12 +210,12 @@ export function mapTransactionDetails(input: {
       txRecord.state ??
       txRecord.TX_Status,
   );
-  const rawError = toStringValue(
+  const rawError = toErrorText(
     receiptRecord.message ??
       txRecord.rawError ??
       txRecord.error ??
       txRecord.TX_Error,
-    '',
+    
   );
   const revertReason = input.revertReason || '';
   const blockNumber = toStringValue(

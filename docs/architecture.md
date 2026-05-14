@@ -13,9 +13,9 @@ ToroLens is structured as a Toronet reference application, not a browser-only ex
 
 ## SDK-First Policy
 
-The official `torosdk` package is the primary integration mechanism. Direct API calls are not used in the current implementation because SDK coverage exists for balances, transactions, roles, TNS resolution, receipts, revert reasons, and network summaries.
+The official `torosdk` package is the primary integration mechanism. SDK coverage exists for balances, transactions, roles, TNS resolution, receipts, revert reasons, and network summaries.
 
-If a future Toronet capability is missing from the SDK, add an isolated adapter inside `libs/toronet/gateway.ts`, include a comment explaining the SDK gap, and return the same normalized error model used by SDK calls. Do not call raw Toronet APIs from routes, hooks, or components.
+There is one controlled fallback in `libs/toronet/gateway.ts`: transaction detail and receipt lookups use the query endpoint with a `hash` parameter when SDK v0.2.0 query helpers return the known `id`/`hash` parameter mismatch. Do not call raw Toronet APIs from routes, hooks, or components. If another fallback is needed later, add it only inside the gateway with a comment explaining the SDK gap and replacement path.
 
 ## Request Lifecycle
 

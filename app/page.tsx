@@ -11,10 +11,7 @@ import TransactionList from '@/components/wallet/TransactionList';
 import { useWalletLookup } from '@/hooks/useWalletLookup';
 import { useWalletTransactions } from '@/hooks/useWalletTransactions';
 import TransactionSearchForm from '@/components/wallet/TransactionSearchForm';
-import NetworkAnalyticsPanel from '@/components/wallet/NetworkAnalyticsPanel';
-import ReferencePanel from '@/components/wallet/ReferencePanel';
 import WalletIntelligencePanels from '@/components/wallet/WalletIntelligencePanels';
-import { useNetworkSummary } from '@/hooks/useNetworkSummary';
 
 export default function HomePage() {
   const router = useRouter();
@@ -35,12 +32,6 @@ export default function HomePage() {
     isLoading: transactionsLoading,
     error: transactionsError,
   } = useWalletTransactions(submittedWallet, 20);
-  const {
-    snapshot,
-    isLoading: networkLoading,
-    error: networkError,
-  } = useNetworkSummary(10);
-
   const walletStatus = useMemo(() => {
     if (!submittedWallet) return 'Awaiting wallet address';
     if (!isValidAddress) return 'Invalid wallet address';
@@ -82,13 +73,11 @@ export default function HomePage() {
         </SectionCard>
 
         <SectionCard
-            title="Transaction Inspector"
-            description="Jump directly to a transaction details page using a transaction hash."
-          >
-            <TransactionSearchForm onSubmit={handleTransactionSubmit} />
-          </SectionCard>
-
-        <ReferencePanel />
+          title="Transaction Inspector"
+          description="Jump directly to a transaction details page using a transaction hash."
+        >
+          <TransactionSearchForm onSubmit={handleTransactionSubmit} />
+        </SectionCard>
 
         {submittedWallet && !isValidAddress ? (
           <ErrorState message="Enter a valid 0x-prefixed 40-byte wallet address." />
@@ -150,12 +139,6 @@ export default function HomePage() {
             isLoading={walletLookupLoading}
           />
         ) : null}
-
-        <NetworkAnalyticsPanel
-          snapshot={snapshot}
-          isLoading={networkLoading}
-          error={networkError}
-        />
 
         <TransactionList
           transactions={transactions}

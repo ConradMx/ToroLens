@@ -6,9 +6,9 @@ import {
   getBlockchainTransactions,
   getLatestBlockData,
   getName,
-  getReceipt,
   getRevertReason,
-  getTransaction,
+  getTransactionById,
+  getTransactionReceiptById,
   initializeSDK,
   isAddressKYCVerified,
   isEnrolled,
@@ -18,6 +18,37 @@ import { ToronetError, classifyToronetError } from '@/libs/toronet/errors';
 
 const DEFAULT_TX_COUNT = 20;
 let initialized = false;
+
+function getFallbackBaseUrl() {
+  if (config.toroApiUrl) return config.toroApiUrl;
+  return config.toroNetwork === 'mainnet'
+    ? 'https://api.toronet.org'
+    : 'https://testnet.toronet.org/api';
+}
+
+function buildSearchParams(
+  op: string,
+  params: Array<{ name: string; value: string | number }>,
+) {
+  const search = new URLSearchParams({ op });
+
+  params.forEach((param, index) => {
+    search.set(`params[${index}][name]`, param.name);
+    search.set(`params[${index}][value]`, String(param.value));
+  });
+
+  return search.toString();
+}
+
+function isFailurePayload(payload: unknown) {
+  if (!payload || typeof payload !== 'object') return false;
+  const record = payload as Record<string, unknown>;
+  return (
+    record.result === false ||
+    (typeof record.message === 'string' &&
+      record.message.toLowerCase().includes('missing'))
+  );
+}
 
 function configureSdk() {
   if (initialized) return;
@@ -65,6 +96,42 @@ async function optional<T>(callback: () => Promise<T>): Promise<T | null> {
   }
 }
 
+async function directQueryFallback<T>(
+  op: string,
+  params: Array<{ name: string; value: string | number }>,
+): Promise<T> {
+  const url = `${getFallbackBaseUrl()}/query?${buildSearchParams(op, params)}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    signal: AbortSignal.timeout(config.toroRequestTimeoutMs),
+  });
+
+  if (!response.ok) {
+    throw new ToronetError({
+      kind: 'upstream',
+      status: 502,
+      message: `Toronet fallback request failed with status ${response.status}.`,
+    });
+  }
+
+  const payload = (await response.json()) as T;
+
+  if (isFailurePayload(payload)) {
+    const message =
+      typeof (payload as Record<string, unknown>).message === 'string'
+        ? ((payload as Record<string, unknown>).message as string)
+        : 'Toronet fallback returned an unsuccessful result.';
+
+    throw new ToronetError({
+      kind: 'upstream',
+      status: 502,
+      message,
+    });
+  }
+
+  return payload;
+}
+
 // This gateway is the only supported Toronet integration boundary in ToroLens.
 // Prefer adding SDK-backed methods here over importing torosdk in routes or UI.
 export const toronetGateway = {
@@ -104,11 +171,36 @@ export const toronetGateway = {
   },
 
   getTransaction(hash: string) {
-    return withToronetBoundary('getTransaction', () => getTransaction(hash));
+    return withToronetBoundary('getTransactionById', async () => {
+      const sdkPayload = await optional(() => getTransactionById(hash));
+
+      if (sdkPayload && !isFailurePayload(sdkPayload)) {
+        return sdkPayload;
+      }
+
+      // SDK v0.2.0 sends the query transaction identifier as `id`, while the
+      // testnet query endpoint currently expects `hash`. Keep that workaround
+      // isolated here so routes and UI remain SDK-first and easy to replace.
+      return directQueryFallback('gettransaction', [
+        { name: 'hash', value: hash },
+      ]);
+    });
   },
 
   getReceipt(hash: string) {
-    return withToronetBoundary('getReceipt', () => getReceipt(hash));
+    return withToronetBoundary('getTransactionReceiptById', async () => {
+      const sdkPayload = await optional(() => getTransactionReceiptById(hash));
+
+      if (sdkPayload && !isFailurePayload(sdkPayload)) {
+        return sdkPayload;
+      }
+
+      // See getTransaction: this fallback exists only for the SDK/query
+      // parameter-name mismatch and should be removed once SDK support aligns.
+      return directQueryFallback('gettransactionreceipt', [
+        { name: 'hash', value: hash },
+      ]);
+    });
   },
 
   getRevertReason(hash: string) {
