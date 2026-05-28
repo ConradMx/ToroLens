@@ -56,37 +56,24 @@ export default function PageHeader({
               <p className="text-lg font-semibold leading-none tracking-tight">
                 {title}
               </p>
-              <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
-                Toronet Reference Platform
-              </p>
+            
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/30 bg-emerald-300/10 px-3 py-2 text-emerald-100">
-              <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-              SDK-first
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300/30 bg-sky-300/10 px-3 py-2 text-sky-100">
-              <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-              Server-boundary
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-amber-100">
-              <BookOpen className="h-3.5 w-3.5" aria-hidden />
-              Fork-ready
-            </span>
+            <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
+                Toronet Reference Platform
+              </p>
           </div>
         </div>
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
         <div className="px-5 py-6 sm:px-6 lg:py-7">
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-            Production-grade Toronet application architecture
-          </p>
-          <h1 className="mt-3 max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-slate-950 sm:text-5xl">
+         
+          <h1 className="mt-3  text-3xl font-semibold  text-slate-950 sm:text-5xl">
             Wallet, transaction, identity, and ecosystem intelligence in one
-            reference build.
+            reference.
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
             {description}
